@@ -1,10 +1,7 @@
 // Single-threaded server.
 // Test with `telnet localhost 8080`.
 
-#include <chrono>
 #include <iostream>
-#include <sstream>
-#include <string>
 #include <thread>
 
 #include <boost/asio.hpp>
@@ -20,7 +17,7 @@ int main() {
         for (;;) {
             tcp::socket socket(io_service);
             acceptor.accept(socket);
-            handle_request_sync(socket);
+            handle_request_sync(&socket);
         }
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
