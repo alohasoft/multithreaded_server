@@ -3,7 +3,7 @@ CPPFLAGS=-lpthread -lboost_system
 
 .PHONY: all clean indent
 
-all: build build/threads build/server_singlethreaded
+all: build build/threads_thread build/threads_async build/server_singlethreaded build/server_multithreaded
 
 build:
 	mkdir build
