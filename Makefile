@@ -1,9 +1,9 @@
 CPP=g++
-CPPFLAGS=-lpthread
+CPPFLAGS=-lpthread -lboost_system
 
 .PHONY: all clean indent
 
-all: build build/threads
+all: build build/threads build/server_singlethreaded
 
 build:
 	mkdir build
@@ -15,4 +15,4 @@ clean:
 	rm -rf build
 
 indent:
-	find . -iname *.cc | xargs clang-format-3.5 -i
+	find . -iname "*.cc" | xargs clang-format-3.5 -i
