@@ -14,10 +14,11 @@ int main() {
     try {
         boost::asio::io_service io_service;
         tcp::acceptor acceptor(io_service, tcp::endpoint(tcp::v4(), 8080));
+        request_handler handler;
         for (;;) {
             std::unique_ptr<tcp::socket> socket(new tcp::socket(io_service));
             acceptor.accept(*socket);
-            std::thread(handle_request_sync<std::unique_ptr<tcp::socket>>, std::move(socket)).detach();
+            std::thread(&request_handler::handle_request_sync, &handler, std::move(socket)).detach();
         }
     } catch (std::exception& e) {
         std::cerr << e.what() << std::endl;
