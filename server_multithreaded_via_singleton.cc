@@ -9,7 +9,7 @@
 #include "handler.h"
 
 struct TCPServer {
-    using boost::asio::ip::tcp;
+    using tcp = boost::asio::ip::tcp;
 
     struct PerPortConnectionAccepter {
         boost::asio::io_service io_service;
@@ -30,13 +30,13 @@ struct TCPServer {
         void operator=(const PerPortConnectionAccepter&) = delete;
     };
 
-    std::map<size_t, PerPortConnectionAccepter*> by_port_;
+    std::map<size_t, std::unique_ptr<PerPortConnectionAccepter>> by_port_;
 
     PerPortConnectionAccepter& operator[](size_t port) {
-        PerPortConnectionAccepter*& ref = by_port_[port];
+        std::unique_ptr<PerPortConnectionAccepter>& ref = by_port_[port];
         if (!ref) {
             std::cout << "Creating server on port " << port << std::endl;
-            ref = new PerPortConnectionAccepter(port);
+            ref.reset(new PerPortConnectionAccepter(port));
             std::cout << "Created server on port " << port << std::endl;
         }
         return *ref;
