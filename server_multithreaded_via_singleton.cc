@@ -23,7 +23,7 @@ struct TCPServer {
             explicit UserHandlerWrapper(T& user_handler) : user_handler(user_handler) {
             }
             virtual void HandleRequest(std::unique_ptr<tcp::socket>&& socket) {
-                user_handler.handle_request_sync(std::move(socket));
+                user_handler.HandleRequestSync(std::move(socket));
             }
             UserHandlerWrapper() = delete;
             UserHandlerWrapper(const UserHandlerWrapper&) = delete;
@@ -91,10 +91,46 @@ struct TCPServer {
     };
 };
 
+struct HTTPRequestHandler {
+    std::string prefix;
+    HTTPRequestHandler(const std::string& prefix = "Echo") : prefix(prefix) {
+    }
+    void HandleRequestSync(std::unique_ptr<tcp::socket>&& socket) {
+        std::string user_message;
+        char c;
+        while (true) {
+            boost::asio::read(*socket, boost::asio::buffer(&c, 1), boost::asio::transfer_all());
+            if (c == '\n' || c == '\r') {
+                break;
+            }
+            user_message += c;
+        }
+
+        const std::string html =
+            "<!doctype html>\n"
+            "<h1>Hello, World!</h1>\n"
+            "<h2>" +
+            prefix +
+            "</h2>\n"
+            "<pre>" +
+            user_message + "</pre>\n";
+
+        std::ostringstream os;
+        os << "HTTP/1.1 200 OK\n";
+        os << "Content-type: text/html\n";
+        os << "Content-length: " << html.length() << "\n";
+        os << "\n";
+        os << html;
+
+        const std::string message = os.str();
+        boost::asio::write(*socket, boost::asio::buffer(message), boost::asio::transfer_all());
+    }
+};
+
 int main() {
-    request_handler handler1("foo");
-    request_handler handler2("bar");
-    request_handler handler3("baz");
+    HTTPRequestHandler handler1("foo");
+    HTTPRequestHandler handler2("bar");
+    HTTPRequestHandler handler3("baz");
 
     TCPServer::Instance()[8080].RegisterHandler(handler1);
     std::this_thread::sleep_for(std::chrono::milliseconds(3000));
