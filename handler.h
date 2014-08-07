@@ -11,6 +11,9 @@
 using boost::asio::ip::tcp;
 
 struct request_handler {
+    std::string prefix;
+    request_handler(const std::string& prefix = "Echo") : prefix(prefix) {
+    }
     void handle_request_sync(std::unique_ptr<tcp::socket>&& socket) {
         boost::system::error_code ignored_error;
         {
@@ -27,7 +30,7 @@ struct request_handler {
                 }
                 s += c;
             }
-            s = "Echo: " + s + "\n";
+            s = prefix + ": " + s + "\n";
             boost::asio::write(*socket, boost::asio::buffer(s), boost::asio::transfer_all(), ignored_error);
         }
         for (int i = 5; i > 0; --i) {
